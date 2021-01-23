@@ -18,7 +18,8 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static DbContextOptionsBuilder UseTriggersInternal(this DbContextOptionsBuilder optionsBuilder)
         {
-            optionsBuilder.RememberActiveDbProvider();
+            TriggerExtensions.RememberActiveDbProvider(optionsBuilder);
+            NativeDbObjectExtensions.RememberActiveDbProvider(optionsBuilder);
             return optionsBuilder.ReplaceService<IMigrationsModelDiffer, MigrationsModelDiffer>();
         }
     }

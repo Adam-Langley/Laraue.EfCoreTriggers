@@ -42,7 +42,7 @@ namespace Laraue.EfCoreTriggers.Extensions
         /// Bad solution, but have no idea yet, how to register current provider using DbContextOptionsBuilder.
         /// </summary>
         /// <param name="builder"></param>
-        public static void RememberActiveDbProvider(this DbContextOptionsBuilder builder)
+        public static void RememberActiveDbProvider(DbContextOptionsBuilder builder)
         {
             _activeProvider = builder.GetActiveDbProvider();
         }

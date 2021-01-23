@@ -1,14 +1,22 @@
-﻿using Laraue.EfCoreTriggers.Common.Builders.Triggers.Base;
+﻿using Laraue.EfCoreTriggers.Common.Builders.Native;
+using Laraue.EfCoreTriggers.Common.Builders.Native.StoredProcedures;
+using Laraue.EfCoreTriggers.Common.Builders.Native.Trigger;
+using Laraue.EfCoreTriggers.Common.Builders.Native.UserDefinedFunctions;
+using Laraue.EfCoreTriggers.Common.Builders.Native.UserDefinedTypes;
+using Laraue.EfCoreTriggers.Common.Builders.Native.Views;
+using Laraue.EfCoreTriggers.Common.Builders.Triggers.Base;
+using Laraue.EfCoreTriggers.Extensions;
 using Microsoft.EntityFrameworkCore.Metadata;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 namespace Laraue.EfCoreTriggers.Common.Builders.Providers
 {
-    public class SqlServerProvider : BaseTriggerProvider
+    public class SqlServerProvider : BaseTriggerProvider, INativeDbObjectSqlProvider
     {
         public SqlServerProvider(IModel model) : base(model)
         {
@@ -224,6 +232,49 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
                 _ => GetColumnName(memberExpression.Member),
             };
         }
+
+        public SqlBuilder GetTemplatedSqlBuilderBaseSql(NativeTypeBuilder storedProcedure)
+        {
+            string processedSql = storedProcedure.Sql;
+            if (null != storedProcedure.Tokens)
+                foreach (var kvp in storedProcedure.Tokens)
+                {
+                    processedSql = processedSql.Replace($"{{{kvp.Key}}}", kvp.Value);
+                }
+
+            return new SqlBuilder()
+                .Append(processedSql);
+        }
+
+        public SqlBuilder GetStoredProcedureSql(StoredProcedureTypeBuilder storedProcedure)
+            => GetTemplatedSqlBuilderBaseSql(storedProcedure);
+
+        public string GetDropStoredProcedureSql(string storedProcedureName)
+            => new SqlBuilder($"DROP PROCEDURE {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(storedProcedureName, Constants.NativeStoredProcedureAnnotationKey)};");
+
+        public SqlBuilder GetUserDefinedTypeSql(UserDefinedTypeTypeBuilder userDefinedType)
+            => GetTemplatedSqlBuilderBaseSql(userDefinedType);
+
+        public string GetDropUserDefinedTypeSql(string userDefinedTypeName)
+            => new SqlBuilder($"DROP TYPE {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(userDefinedTypeName, Constants.NativeUserDefinedTypeAnnotationKey)};");
+
+        public SqlBuilder GetUserDefinedFunctionSql(UserDefinedFunctionTypeBuilder userDefinedFunction)
+            => GetTemplatedSqlBuilderBaseSql(userDefinedFunction);
+
+        public string GetDropUserDefinedFunctionSql(string userDefinedFunctionName)
+            => new SqlBuilder($"DROP FUNCTION {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(userDefinedFunctionName, Constants.NativeUserDefinedFunctionAnnotationKey)};");
+
+        public SqlBuilder GetViewSql(ViewTypeBuilder viewTypeBuilder)
+            => GetTemplatedSqlBuilderBaseSql(viewTypeBuilder);
+
+        public string GetDropViewSql(string viewName)
+            => new SqlBuilder($"DROP VIEW {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(viewName, Constants.NativeViewAnnotationKey)};");
+
+        public SqlBuilder GetNativeTriggerSql(NativeTriggerTypeBuilder nativeTriggerTypeBuilder)
+            => GetTemplatedSqlBuilderBaseSql(nativeTriggerTypeBuilder);
+
+        public string GetDropNativeTriggerSql(string triggerName)
+            => new SqlBuilder($"DROP TRIGGER {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(triggerName, Constants.NativeTriggerAnnotationKey)};");
     }
 
     internal static class Extensions
