@@ -14,11 +14,5 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Native.Views
         }
 
         public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetViewSql(this);
-
-        public ViewTypeBuilder Templated(IDictionary<string, string> tokens)
-        {
-            SetTokens(tokens);
-            return this;
-        }
     }
 }

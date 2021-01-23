@@ -60,7 +60,7 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static EntityTypeBuilder<T> AddNativeTriggerAnnotation<T>(
             this EntityTypeBuilder<T> entityTypeBuilder,
-            NativeTriggerTypeBuilder view) where T : class
+            NativeTriggerTypeBuilder<T> view) where T : class
         {
             var entityType = entityTypeBuilder.Metadata.Model.FindEntityType(typeof(T).FullName);
             entityType.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model)).Sql);
@@ -94,7 +94,7 @@ namespace Laraue.EfCoreTriggers.Extensions
         public static EntityTypeBuilder<T> InsteadOfInsert<T>(this EntityTypeBuilder<T> entityTypeBuilder, Action<OnInsertTrigger<T>> configuration) where T : class
             => entityTypeBuilder.AddOnInsertTrigger(configuration, TriggerTime.InsteadOf);
 
-        public static EntityTypeBuilder<T> NativeTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, string name, string rawScript, Action<NativeTriggerTypeBuilder> configuration) where T : class
+        public static EntityTypeBuilder<T> NativeTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, string name, string rawScript, Action<NativeTriggerTypeBuilder<T>> configuration) where T : class
             => entityTypeBuilder.AddNativeTrigger<T>(configuration, name, rawScript);
 
 
@@ -166,10 +166,10 @@ namespace Laraue.EfCoreTriggers.Extensions
             return modelBuilder.AddViewAnnotation(view);
         }
 
-        private static EntityTypeBuilder<T> AddNativeTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, Action<NativeTriggerTypeBuilder> configuration, 
+        private static EntityTypeBuilder<T> AddNativeTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, Action<NativeTriggerTypeBuilder<T>> configuration, 
             string name, string rawScript) where T : class
         {
-            var view = new NativeTriggerTypeBuilder(name, rawScript, 0);
+            var view = new NativeTriggerTypeBuilder<T>(name, rawScript, 0);
             configuration.Invoke(view);
             return entityTypeBuilder.AddNativeTriggerAnnotation(view);
         }

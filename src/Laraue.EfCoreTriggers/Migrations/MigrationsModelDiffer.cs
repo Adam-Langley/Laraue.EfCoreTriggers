@@ -90,11 +90,15 @@ namespace Laraue.EfCoreTriggers.Migrations
                     if ((string)oldValue.Value != (string)newValue.Value)
                     {
                         if (oldValue.Name.StartsWith(Constants.TriggerAnnotationKey))
+                        {
                             deleteTriggerOperations.AddDeleteTriggerSqlMigration(oldValue, sourceModel);
+                            createTriggerOperations.AddCreateTriggerSqlMigration(newValue);
+                        }
                         else
+                        {
                             deleteTriggerOperations.AddDeleteNativeTriggerSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering);
-
-                        createTriggerOperations.AddCreateTriggerSqlMigration(newValue);
+                            createTriggerOperations.AddCreateNativeTriggerSqlMigration(newValue);
+                        }
                     }
                 }
 
@@ -112,7 +116,10 @@ namespace Laraue.EfCoreTriggers.Migrations
                 foreach (var newTriggerName in newAnnotationNames.Except(commonAnnotationNames))
                 {
                     var newTriggerAnnotation = newEntityType.GetAnnotation(newTriggerName);
-                    createTriggerOperations.AddCreateTriggerSqlMigration(newTriggerAnnotation);
+                    if (newTriggerAnnotation.Name.StartsWith(Constants.TriggerAnnotationKey))
+                        createTriggerOperations.AddCreateTriggerSqlMigration(newTriggerAnnotation);
+                    else
+                        createTriggerOperations.AddCreateNativeTriggerSqlMigration(newTriggerAnnotation);
                 }
             }
 
@@ -481,6 +488,18 @@ namespace Laraue.EfCoreTriggers.Migrations
             list.Add(op);
             var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(annotation.Name, Constants.NativeViewAnnotationKey);
             ordering[op] = order;
+            return list;
+        }
+
+        public static IList<SqlOperation> AddCreateNativeTriggerSqlMigration(this IList<SqlOperation> list, IAnnotation annotation)
+        {
+            var viewSql = annotation.Value as string;
+
+            var op = new SqlOperation
+            {
+                Sql = viewSql,
+            };
+            list.Add(op);
             return list;
         }
 

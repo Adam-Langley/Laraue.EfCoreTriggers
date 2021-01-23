@@ -14,11 +14,5 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Native.UserDefinedFunctions
         }
 
         public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetUserDefinedFunctionSql(this);
-
-        public UserDefinedFunctionTypeBuilder Templated(IDictionary<string, string> tokens)
-        {
-            SetTokens(tokens);
-            return this;
-        }
     }
 }

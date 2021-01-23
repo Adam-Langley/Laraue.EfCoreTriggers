@@ -41,5 +41,10 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Native
                         }.Union(_tokens ?? new Dictionary<string, string>()));
             }
         }
+        public NativeTypeBuilder Templated(IDictionary<string, string> tokens)
+        {
+            SetTokens(tokens);
+            return this;
+        }
     }
 }

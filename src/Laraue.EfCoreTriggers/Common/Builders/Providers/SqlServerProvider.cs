@@ -233,11 +233,11 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
             };
         }
 
-        public SqlBuilder GetTemplatedSqlBuilderBaseSql(NativeTypeBuilder storedProcedure)
+        public SqlBuilder GetTemplatedSqlBuilderBaseSql(NativeTypeBuilder storedProcedure, IDictionary<string, string> arguments = null)
         {
             string processedSql = storedProcedure.Sql;
             if (null != storedProcedure.Tokens)
-                foreach (var kvp in storedProcedure.Tokens)
+                foreach (var kvp in storedProcedure.Tokens.Union(arguments ?? new Dictionary<string,string>()))
                 {
                     processedSql = processedSql.Replace($"{{{kvp.Key}}}", kvp.Value);
                 }
@@ -270,8 +270,8 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
         public string GetDropViewSql(string viewName)
             => new SqlBuilder($"DROP VIEW {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(viewName, Constants.NativeViewAnnotationKey)};");
 
-        public SqlBuilder GetNativeTriggerSql(NativeTriggerTypeBuilder nativeTriggerTypeBuilder)
-            => GetTemplatedSqlBuilderBaseSql(nativeTriggerTypeBuilder);
+        public SqlBuilder GetNativeTriggerSql<TTriggerEntity>(NativeTriggerTypeBuilder<TTriggerEntity> nativeTriggerTypeBuilder)
+            => GetTemplatedSqlBuilderBaseSql(nativeTriggerTypeBuilder, new Dictionary<string,string> { { "TABLE_NAME", GetTableName(typeof(TTriggerEntity)) }});
 
         public string GetDropNativeTriggerSql(string triggerName)
             => new SqlBuilder($"DROP TRIGGER {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(triggerName, Constants.NativeTriggerAnnotationKey)};");

@@ -21,7 +21,7 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
         SqlBuilder GetViewSql(ViewTypeBuilder viewTypeBuilder);
         string GetDropViewSql(string viewName);
 
-        SqlBuilder GetNativeTriggerSql(NativeTriggerTypeBuilder viewTypeBuilder);
+        SqlBuilder GetNativeTriggerSql<TTriggerEntity>(NativeTriggerTypeBuilder<TTriggerEntity> viewTypeBuilder);
         string GetDropNativeTriggerSql(string viewName);
     }
 }

@@ -7,18 +7,12 @@ using System.Text;
 
 namespace Laraue.EfCoreTriggers.Common.Builders.Native.Trigger
 {
-    public class NativeTriggerTypeBuilder : NativeTypeBuilder, ISqlConvertible
+    public class NativeTriggerTypeBuilder<TTriggerEntity> : NativeTypeBuilder, ISqlConvertible
     {
         public NativeTriggerTypeBuilder(string name, string rawScript, int order) : base(Constants.NativeTriggerAnnotationKey, "TRIGGER_NAME", name, rawScript, order)
         {
         }
 
-        public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetNativeTriggerSql(this);
-
-        public NativeTriggerTypeBuilder Templated(IDictionary<string, string> tokens)
-        {
-            SetTokens(tokens);
-            return this;
-        }
+        public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetNativeTriggerSql<TTriggerEntity>(this);
     }
 }
