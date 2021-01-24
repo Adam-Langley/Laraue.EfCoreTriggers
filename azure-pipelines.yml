@@ -27,12 +27,8 @@ steps:
     versioningScheme: 'off'
 
 - task: NuGetCommand@2
-  displayName: 'nuget push'
   inputs:
-    command: 'push'
+    command: 'restore'
+    restoreSolution: '**/*.sln'
     feedsToUse: 'select'
-    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
-    nuGetFeedType: 'internal'
-    publishVstsFeed: 'eadbc838-d0d1-499f-a394-2da54247da92/3299ab6d-2681-47da-a731-a19e4e5d123d'
-    versioningScheme: 'off'
-    allowPackageConflicts: true
+    vstsFeed: 'c08018e8-96e0-4528-a2d9-8f3d3b61edb1'
