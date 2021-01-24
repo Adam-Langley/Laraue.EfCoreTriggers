@@ -14,3 +14,14 @@ steps:
   inputs:
     command: 'build'
     projects: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
+
+- task: NuGetCommand@2
+  displayName: 'nuget push'
+  inputs:
+    command: 'push'
+    feedsToUse: 'select'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'PrivateFeed'
+    versioningScheme: 'off'
+    allowPackageConflicts: true
