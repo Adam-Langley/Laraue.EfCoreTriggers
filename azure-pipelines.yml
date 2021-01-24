@@ -24,7 +24,7 @@ steps:
     arguments: '--configuration $(buildConfiguration)'
     packagesToPack: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
     nobuild: true
-    versioningScheme: 'off'
+    versioningScheme: byBuildNumber
 
 - task: NuGetCommand@2
   inputs:
@@ -32,4 +32,3 @@ steps:
     packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
     nuGetFeedType: 'internal'
     publishVstsFeed: 'eadbc838-d0d1-499f-a394-2da54247da92/3299ab6d-2681-47da-a731-a19e4e5d123d'
-    versioningScheme: byBuildNumber
