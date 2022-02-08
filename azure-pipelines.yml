@@ -1,0 +1,39 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+variables:
+  Major: '1'
+  Minor: '2'
+  Patch: '1'
+  
+trigger:
+- feature-native-sql-objects
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+- task: DotNetCoreCLI@2
+  inputs:
+    command: 'build'
+    projects: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
+
+# The second task is dotnet pack command again pointing to the csproj file
+# The nobuild means the project will not be compiled before running pack, because its already built in above step
+- task: DotNetCoreCLI@2
+  displayName: "dotnet pack"
+  inputs:
+    command: 'pack'
+    arguments: '--configuration $(buildConfiguration)'
+    packagesToPack: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
+    nobuild: true
+    versioningScheme: byPrereleaseNumber
+
+
+- task: NuGetCommand@2
+  inputs:
+    command: 'push'
+    packagesToPush: '$(Build.ArtifactStagingDirectory)/**/*.nupkg;!$(Build.ArtifactStagingDirectory)/**/*.symbols.nupkg'
+    nuGetFeedType: 'internal'
+    publishVstsFeed: 'eadbc838-d0d1-499f-a394-2da54247da92/3299ab6d-2681-47da-a731-a19e4e5d123d'
