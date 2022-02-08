@@ -8,5 +8,6 @@
         public const string NativeUserDefinedFunctionAnnotationKey = "LC_FUNC_{0}_";
         public const string NativeViewAnnotationKey = "LC_VIEW_{0}_";
         public const string NativeTriggerAnnotationKey = "LC_NTRIG_{0}_";
+        public const string NativeIndexAnnotationKey = "LC_INDEX_{0}_";
     }
 }

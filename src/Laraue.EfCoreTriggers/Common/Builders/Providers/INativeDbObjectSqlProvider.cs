@@ -4,6 +4,7 @@ using Laraue.EfCoreTriggers.Common.Builders.Native.UserDefinedFunctions;
 using Laraue.EfCoreTriggers.Common.Builders.Native.UserDefinedTypes;
 using Laraue.EfCoreTriggers.Common.Builders.Native.Views;
 using Laraue.EfCoreTriggers.Common.Builders.Triggers.Base;
+using Laraue.EfCoreTriggers.Common.Builders.Native.Indexes;
 
 namespace Laraue.EfCoreTriggers.Common.Builders.Providers
 {
@@ -23,5 +24,7 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
 
         SqlBuilder GetNativeTriggerSql<TTriggerEntity>(NativeTriggerTypeBuilder<TTriggerEntity> viewTypeBuilder);
         string GetDropNativeTriggerSql(string viewName);
+        SqlBuilder GetIndexSql(IndexTypeBuilder indexTypeBuilder);
+        string GetDropIndexSql(string indexName);
     }
 }

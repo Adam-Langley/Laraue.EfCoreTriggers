@@ -47,7 +47,7 @@ namespace Laraue.EfCoreTriggers.Migrations
             var commonEntityTypeNames = oldEntityTypeNames.Intersect(newEntityTypeNames);
 
             // Drop all triggers for deleted entities.
-            foreach (var deletedTypeName in oldEntityTypeNames.Except(commonEntityTypeNames))
+            foreach (var deletedTypeName in oldEntityTypeNames.Where(x => !commonEntityTypeNames.Any(y => object.Equals(x, y))))
             {
                 var deletedEntityType = source.Model.FindEntityType(deletedTypeName);
                 foreach (var annotation in deletedEntityType.GetTriggerAnnotations())
@@ -60,7 +60,7 @@ namespace Laraue.EfCoreTriggers.Migrations
             }
 
             // Add all triggers to created entities.
-            foreach (var newTypeName in newEntityTypeNames.Except(commonEntityTypeNames))
+            foreach (var newTypeName in newEntityTypeNames.Where(x => !commonEntityTypeNames.Any(y => object.Equals(x, y))))
             {
                 foreach (var annotation in targetModel.FindEntityType(newTypeName).GetTriggerAnnotations())
                     createTriggerOperations.AddCreateTriggerSqlMigration(annotation);
@@ -87,7 +87,7 @@ namespace Laraue.EfCoreTriggers.Migrations
                 {
                     var oldValue = sourceModel.FindEntityType(entityTypeName).GetAnnotation(commonAnnotationName);
                     var newValue = targetModel.FindEntityType(entityTypeName).GetAnnotation(commonAnnotationName);
-                    if ((string)oldValue.Value != (string)newValue.Value)
+                    if (!object.Equals(oldValue.Value, newValue.Value))
                     {
                         if (oldValue.Name.StartsWith(Constants.TriggerAnnotationKey))
                         {
@@ -103,7 +103,7 @@ namespace Laraue.EfCoreTriggers.Migrations
                 }
 
                 // If trigger was removed, delete it.
-                foreach (var oldTriggerName in oldAnnotationNames.Except(commonAnnotationNames))
+                foreach (var oldTriggerName in oldAnnotationNames.Where(x => !commonAnnotationNames.Any(y => object.Equals(x, y))))
                 {
                     var oldTriggerAnnotation = oldEntityType.GetAnnotation(oldTriggerName);
                     if (oldTriggerAnnotation.Name.StartsWith(Constants.TriggerAnnotationKey))
@@ -113,7 +113,7 @@ namespace Laraue.EfCoreTriggers.Migrations
                 }
 
                 // If trigger was added, create it.
-                foreach (var newTriggerName in newAnnotationNames.Except(commonAnnotationNames))
+                foreach (var newTriggerName in newAnnotationNames.Where(x => !commonAnnotationNames.Any(y => object.Equals(x, y))))
                 {
                     var newTriggerAnnotation = newEntityType.GetAnnotation(newTriggerName);
                     if (newTriggerAnnotation.Name.StartsWith(Constants.TriggerAnnotationKey))
@@ -124,190 +124,87 @@ namespace Laraue.EfCoreTriggers.Migrations
             }
 
             // User Defined Functions
-            var oldUserDefinedFunctionAnnotationNames = sourceModel.GetUserDefinedFunctionAnnotations()
-                .Select(x => x.Name);
-
-            var newUserDefinedFunctionAnnotationNames = targetModel.GetUserDefinedFunctionAnnotations()
-                .Select(x => x.Name);
-
-            var commonUserDefinedFunctionAnnotationNames = oldUserDefinedFunctionAnnotationNames.Intersect(newUserDefinedFunctionAnnotationNames);
-
-            // If user-defined Functions was changed, recreate it.
-            foreach (var commonAnnotationName in commonUserDefinedFunctionAnnotationNames)
-            {
-                var oldValue = sourceModel.GetAnnotation(commonAnnotationName);
-                var newValue = targetModel.GetAnnotation(commonAnnotationName);
-                if ((string)oldValue.Value != (string)newValue.Value)
-                {
+            SynchronizeModels(
+                sourceModel,
+                targetModel,
+                x => x.GetUserDefinedFunctionAnnotations(),
+                (oldValue) => {
                     deleteNativeObjectOperations.AddDeleteUserDefinedFunctionSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering);
-                    createNativeObjectOperations.AddCreateUserDefinedFunctionSqlMigration(newValue, nativeObjectOperationOrdering);
-                }
-            }
-
-            // If user-defined Functions was removed, delete it.
-            foreach (var oldUserDefinedFunctionName in oldUserDefinedFunctionAnnotationNames.Except(commonUserDefinedFunctionAnnotationNames))
-            {
-                var oldUserDefinedFunctionAnnotation = sourceModel.GetAnnotation(oldUserDefinedFunctionName);
-                deleteNativeObjectOperations.AddDeleteUserDefinedFunctionSqlMigration(oldUserDefinedFunctionAnnotation, sourceModel, nativeObjectOperationOrdering);
-                var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(oldUserDefinedFunctionAnnotation.Name, Constants.NativeUserDefinedFunctionAnnotationKey);
-                nativeObjectOperationOrdering[deleteNativeObjectOperations.Last()] = order;
-            }
-
-            // If user-defined Functions was added, create it.
-            foreach (var newUserDefinedFunctionName in newUserDefinedFunctionAnnotationNames.Except(commonUserDefinedFunctionAnnotationNames))
-            {
-                var newUserDefinedFunctionAnnotation = targetModel.GetAnnotation(newUserDefinedFunctionName);
-                createNativeObjectOperations.AddCreateUserDefinedFunctionSqlMigration(newUserDefinedFunctionAnnotation, nativeObjectOperationOrdering);
-            }
-
-            /* native objects */
-            //var oldNativeObjectAnnotationNames = sourceModel.GetNativeObjectAnnotations()
-            //    .Select(x => RawDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(x.Name));
-
-            //var newNativeObjectAnnotationNames = targetModel.GetNativeObjectAnnotations()
-            //    .Select(x => RawDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(x.Name))
-            //    .OrderBy;
-
-            //var commonUserDefinedTypeAnnotationNames = oldNativeObjectAnnotationNames.Intersect(newNativeObjectAnnotationNames);
-
-            //// If user-defined type was changed, recreate it.
-            //foreach (var commonAnnotationName in commonUserDefinedTypeAnnotationNames)
-            //{
-            //    var oldValue = sourceModel.GetAnnotation(commonAnnotationName);
-            //    var newValue = targetModel.GetAnnotation(commonAnnotationName);
-            //    if ((string)oldValue.Value != (string)newValue.Value)
-            //    {
-            //        deleteNativeObjectOperations.AddDeleteUserDefinedTypeSqlMigration(oldValue, sourceModel);
-            //        createNativeObjectOperations.AddCreateUserDefinedTypeSqlMigration(newValue);
-            //    }
-            //}
-
-            //// If user-defined type was removed, delete it.
-            //foreach (var oldUserDefinedTypeName in oldUserDefinedTypeAnnotationNames.Except(commonUserDefinedTypeAnnotationNames))
-            //{
-            //    var oldUserDefinedTypeAnnotation = sourceModel.GetAnnotation(oldUserDefinedTypeName);
-            //    deleteNativeObjectOperations.AddDeleteUserDefinedTypeSqlMigration(oldUserDefinedTypeAnnotation, sourceModel);
-            //}
-
-            //// If user-defined type was added, create it.
-            //foreach (var newUserDefinedTypeName in newUserDefinedTypeAnnotationNames.Except(commonUserDefinedTypeAnnotationNames))
-            //{
-            //    var newUserDefinedTypeAnnotation = targetModel.GetAnnotation(newUserDefinedTypeName);
-            //    createNativeObjectOperations.AddCreateUserDefinedTypeSqlMigration(newUserDefinedTypeAnnotation);
-            //}
-            /* native objects */
-
-
+                    var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(oldValue.Name, Constants.NativeUserDefinedFunctionAnnotationKey);
+                    nativeObjectOperationOrdering[deleteNativeObjectOperations.Last()] = order;
+                },
+                (newValue) => createNativeObjectOperations.AddCreateUserDefinedFunctionSqlMigration(newValue, nativeObjectOperationOrdering));
 
             // User Defined Types
-            var oldUserDefinedTypeAnnotationNames = sourceModel.GetUserDefinedTypeAnnotations()
-                .Select(x => x.Name);
-
-            var newUserDefinedTypeAnnotationNames = targetModel.GetUserDefinedTypeAnnotations()
-                .Select(x => x.Name);
-
-            var commonUserDefinedTypeAnnotationNames = oldUserDefinedTypeAnnotationNames.Intersect(newUserDefinedTypeAnnotationNames);
-
-            // If user-defined type was changed, recreate it.
-            foreach (var commonAnnotationName in commonUserDefinedTypeAnnotationNames)
-            {
-                var oldValue = sourceModel.GetAnnotation(commonAnnotationName);
-                var newValue = targetModel.GetAnnotation(commonAnnotationName);
-                if ((string)oldValue.Value != (string)newValue.Value)
-                {
-                    deleteNativeObjectOperations.AddDeleteUserDefinedTypeSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering);
-                    createNativeObjectOperations.AddCreateUserDefinedTypeSqlMigration(newValue, nativeObjectOperationOrdering);
-                }
-            }
-
-            // If user-defined type was removed, delete it.
-            foreach (var oldUserDefinedTypeName in oldUserDefinedTypeAnnotationNames.Except(commonUserDefinedTypeAnnotationNames))
-            {
-                var oldUserDefinedTypeAnnotation = sourceModel.GetAnnotation(oldUserDefinedTypeName);
-                deleteNativeObjectOperations.AddDeleteUserDefinedTypeSqlMigration(oldUserDefinedTypeAnnotation, sourceModel, nativeObjectOperationOrdering);
-            }
-
-            // If user-defined type was added, create it.
-            foreach (var newUserDefinedTypeName in newUserDefinedTypeAnnotationNames.Except(commonUserDefinedTypeAnnotationNames))
-            {
-                var newUserDefinedTypeAnnotation = targetModel.GetAnnotation(newUserDefinedTypeName);
-                createNativeObjectOperations.AddCreateUserDefinedTypeSqlMigration(newUserDefinedTypeAnnotation, nativeObjectOperationOrdering);
-            }
+            SynchronizeModels(
+                sourceModel,
+                targetModel,
+                x => x.GetUserDefinedTypeAnnotations(),
+                (oldValue) => deleteNativeObjectOperations.AddDeleteUserDefinedTypeSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
+                (newValue) => createNativeObjectOperations.AddCreateUserDefinedTypeSqlMigration(newValue, nativeObjectOperationOrdering));
 
             // Views
-            var oldViewAnnotationNames = sourceModel.GetViewAnnotations()
-                .Select(x => x.Name);
+            SynchronizeModels(
+                sourceModel,
+                targetModel,
+                x => x.GetViewAnnotations(),
+                (oldValue) => deleteNativeObjectOperations.AddDeleteViewSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
+                (newValue) => createNativeObjectOperations.AddCreateViewSqlMigration(newValue, nativeObjectOperationOrdering));
 
-            var newViewAnnotationNames = targetModel.GetViewAnnotations()
-                .Select(x => x.Name);
-
-            var commonViewAnnotationNames = oldViewAnnotationNames.Intersect(newViewAnnotationNames);
-
-            // If View was changed, recreate it.
-            foreach (var commonAnnotationName in commonViewAnnotationNames)
-            {
-                var oldValue = sourceModel.GetAnnotation(commonAnnotationName);
-                var newValue = targetModel.GetAnnotation(commonAnnotationName);
-                if ((string)oldValue.Value != (string)newValue.Value)
-                {
-                    deleteNativeObjectOperations.AddDeleteViewSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering);
-                    createNativeObjectOperations.AddCreateViewSqlMigration(newValue, nativeObjectOperationOrdering);
-                }
-            }
-
-            // If View was removed, delete it.
-            foreach (var oldViewName in oldViewAnnotationNames.Except(commonViewAnnotationNames))
-            {
-                var oldViewAnnotation = sourceModel.GetAnnotation(oldViewName);
-                deleteNativeObjectOperations.AddDeleteViewSqlMigration(oldViewAnnotation, sourceModel, nativeObjectOperationOrdering);
-            }
-
-            // If View was added, create it.
-            foreach (var newViewName in newViewAnnotationNames.Except(commonViewAnnotationNames))
-            {
-                var newViewAnnotation = targetModel.GetAnnotation(newViewName);
-                createNativeObjectOperations.AddCreateViewSqlMigration(newViewAnnotation, nativeObjectOperationOrdering);
-            }
-
-            // Stored Procedures
-            var oldStoredProcedureAnnotationNames = sourceModel.GetStoredProcedureAnnotations()
-                .Select(x => x.Name);
-
-            var newStoredProcedureAnnotationNames = targetModel.GetStoredProcedureAnnotations()
-                .Select(x => x.Name);
-
-            var commonStoredProcedureAnnotationNames = oldStoredProcedureAnnotationNames.Intersect(newStoredProcedureAnnotationNames);
-
-            // If stored procedure was changed, recreate it.
-            foreach (var commonAnnotationName in commonStoredProcedureAnnotationNames)
-            {
-                var oldValue = sourceModel.GetAnnotation(commonAnnotationName);
-                var newValue = targetModel.GetAnnotation(commonAnnotationName);
-                if ((string)oldValue.Value != (string)newValue.Value)
-                {
-                    deleteNativeObjectOperations.AddDeleteStoredProcedureSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering);
-                    createNativeObjectOperations.AddCreateStoredProcedureSqlMigration(newValue, nativeObjectOperationOrdering);
-                }
-            }
-
-            // If stored procedure was removed, delete it.
-            foreach (var oldStoredProcedureName in oldStoredProcedureAnnotationNames.Except(commonStoredProcedureAnnotationNames))
-            {
-                var oldStoredProcedureAnnotation = sourceModel.GetAnnotation(oldStoredProcedureName);
-                deleteNativeObjectOperations.AddDeleteStoredProcedureSqlMigration(oldStoredProcedureAnnotation, sourceModel, nativeObjectOperationOrdering);
-            }
-
-            // If stored procedure was added, create it.
-            foreach (var newStoredProcedureName in newStoredProcedureAnnotationNames.Except(commonStoredProcedureAnnotationNames))
-            {
-                var newStoredProcedureAnnotation = targetModel.GetAnnotation(newStoredProcedureName);
-                createNativeObjectOperations.AddCreateStoredProcedureSqlMigration(newStoredProcedureAnnotation, nativeObjectOperationOrdering);
-            }
+            SynchronizeModels(
+                sourceModel,
+                targetModel,
+                x => x.GetStoredProcedureAnnotations(),
+                (oldValue) => deleteNativeObjectOperations.AddDeleteStoredProcedureSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
+                (newValue) => createNativeObjectOperations.AddCreateStoredProcedureSqlMigration(newValue, nativeObjectOperationOrdering));
 
             createNativeObjectOperations = createNativeObjectOperations.OrderBy(x => nativeObjectOperationOrdering[x]).ToList();
             deleteNativeObjectOperations = deleteNativeObjectOperations.OrderByDescending(x => nativeObjectOperationOrdering[x]).ToList();
 
             return MergeOperations(base.GetDifferences(source, target), createTriggerOperations, deleteTriggerOperations, createNativeObjectOperations, deleteNativeObjectOperations);
+        }
+
+        void SynchronizeModels(IModel sourceModel, IModel targetModel, Func<IModel, IEnumerable<IAnnotation>> annotationGetter, Action<IAnnotation> deletor, Action<IAnnotation> creator)
+        {
+            // Stored Procedures
+            var previousAnnotationNames = annotationGetter(sourceModel)
+                .Select(x => x.Name);
+
+            var currentAnnotationNames = annotationGetter(targetModel)
+                .Select(x => x.Name);
+
+            var commonAnnotationNames = previousAnnotationNames.Join(currentAnnotationNames, x => RemoveOrderComponent(x), y => RemoveOrderComponent(y), (Previous, Current) => new { Previous, Current });
+
+            // If stored procedure was changed, recreate it.
+            foreach (var commonAnnotationName in commonAnnotationNames)
+            {
+                var oldValue = sourceModel.GetAnnotation(commonAnnotationName.Previous);
+                var newValue = targetModel.GetAnnotation(commonAnnotationName.Current);
+                if (!object.Equals(oldValue.Value, newValue.Value))
+                {
+                    deletor(oldValue);
+                    creator(newValue);
+                }
+            }
+
+            // If stored procedure was removed, delete it.
+            foreach (var previousAnnotationName in previousAnnotationNames.Except(commonAnnotationNames.Select(x => x.Previous)))
+            {
+                var previousAnnotation = sourceModel.GetAnnotation(previousAnnotationName);
+                deletor(previousAnnotation);
+            }
+
+            // If stored procedure was added, create it.
+            foreach (var currentAnnotationName in currentAnnotationNames.Except(commonAnnotationNames.Select(x => x.Current)))
+            {
+                var currentAnnotation = targetModel.GetAnnotation(currentAnnotationName);
+                creator(currentAnnotation);
+            }
+        }
+
+        private static string RemoveOrderComponent(string name)
+        {
+            return Regex.Replace(name, "(LC_(SPROC|FUNC|TYPE|VIEW)_)([0-9]+_)", x => x.Groups[1].Value);
         }
 
         private IReadOnlyList<MigrationOperation> MergeOperations(
