@@ -151,6 +151,14 @@ namespace Laraue.EfCoreTriggers.Migrations
                 (oldValue) => deleteNativeObjectOperations.AddDeleteViewSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
                 (newValue) => createNativeObjectOperations.AddCreateViewSqlMigration(newValue, nativeObjectOperationOrdering));
 
+            // Indexes
+            SynchronizeModels(
+                sourceModel,
+                targetModel,
+                x => x.GetIndexAnnotations(),
+                (oldValue) => deleteNativeObjectOperations.AddDeleteIndexSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
+                (newValue) => createNativeObjectOperations.AddCreateIndexSqlMigration(newValue, nativeObjectOperationOrdering));
+
             SynchronizeModels(
                 sourceModel,
                 targetModel,
@@ -277,6 +285,9 @@ namespace Laraue.EfCoreTriggers.Migrations
         public static IEnumerable<IAnnotation> GetViewAnnotations(this IAnnotatable entityType)
         => GetNativeAnnotations(Constants.NativeViewAnnotationKey, entityType);
 
+        public static IEnumerable<IAnnotation> GetIndexAnnotations(this IAnnotatable entityType)
+        => GetNativeAnnotations(Constants.NativeIndexAnnotationKey, entityType);
+
         public static IEnumerable<IAnnotation> GetNativeObjectAnnotations(this IAnnotatable entityType)
         => GetNativeTriggerAnnotations(entityType)
             .Union(GetStoredProcedureAnnotations(entityType))
@@ -384,6 +395,32 @@ namespace Laraue.EfCoreTriggers.Migrations
             };
             list.Add(op);
             var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(annotation.Name, Constants.NativeViewAnnotationKey);
+            ordering[op] = order;
+            return list;
+        }
+
+        public static IList<SqlOperation> AddCreateIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IDictionary<SqlOperation, int> ordering)
+        {
+            var indexSql = annotation.Value as string;
+
+            var op = new SqlOperation
+            {
+                Sql = indexSql,
+            };
+            list.Add(op);
+            var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(annotation.Name, Constants.NativeIndexAnnotationKey);
+            ordering[op] = order;
+            return list;
+        }
+
+        public static IList<SqlOperation> AddDeleteIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IModel model, IDictionary<SqlOperation, int> ordering)
+        {
+            var op = new SqlOperation
+            {
+                Sql = NativeDbObjectExtensions.GetSqlProvider(model).GetDropIndexSql(annotation.Name),
+            };
+            list.Add(op);
+            var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(annotation.Name, Constants.NativeIndexAnnotationKey);
             ordering[op] = order;
             return list;
         }

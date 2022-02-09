@@ -9,7 +9,7 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Native.Indexes
 {
     public class IndexTypeBuilder : NativeTypeBuilder, ISqlConvertible
     {
-        public IndexTypeBuilder(string name, string rawScript, int order) : base(Constants.NativeViewAnnotationKey, "INDEX_NAME", name, rawScript, order)
+        public IndexTypeBuilder(string name, string rawScript, int order) : base(Constants.NativeIndexAnnotationKey, "INDEX_NAME", name, rawScript, order)
         {
         }
 
