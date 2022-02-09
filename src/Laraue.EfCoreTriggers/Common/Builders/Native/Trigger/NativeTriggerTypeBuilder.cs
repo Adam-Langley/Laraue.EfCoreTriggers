@@ -13,6 +13,6 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Native.Trigger
         {
         }
 
-        public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetNativeTriggerSql<TTriggerEntity>(this);
+        public virtual SqlBuilder BuildSql(INativeDbObjectSqlProvider visitor) => visitor.GetNativeTriggerSql(this);
     }
 }

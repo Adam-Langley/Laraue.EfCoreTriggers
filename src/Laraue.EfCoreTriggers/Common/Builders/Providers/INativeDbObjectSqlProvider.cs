@@ -24,7 +24,7 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
 
         SqlBuilder GetNativeTriggerSql<TTriggerEntity>(NativeTriggerTypeBuilder<TTriggerEntity> viewTypeBuilder);
         string GetDropNativeTriggerSql(string viewName);
-        SqlBuilder GetIndexSql(IndexTypeBuilder indexTypeBuilder);
-        string GetDropIndexSql(string indexName);
+        SqlBuilder GetNativeIndexSql<TIndexEntity>(NativeIndexTypeBuilder<TIndexEntity> indexTypeBuilder);
+        string GetDropIndexSql(string indexName, string tableName);
     }
 }

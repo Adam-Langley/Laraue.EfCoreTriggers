@@ -58,12 +58,13 @@ namespace Laraue.EfCoreTriggers.Extensions
             modelBuilder.Model.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
             return modelBuilder;
         }
-        private static ModelBuilder AddIndexAnnotation(
-            this ModelBuilder modelBuilder,
-            IndexTypeBuilder index)
+        private static EntityTypeBuilder<T> AddNativeIndexAnnotation<T>(
+            this EntityTypeBuilder<T> entityTypeBuilder,
+            NativeIndexTypeBuilder<T> index) where T : class
         {
-            modelBuilder.Model.AddAnnotation(index.AnnotationName, index.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
-            return modelBuilder;
+            var entityType = entityTypeBuilder.Metadata.Model.FindEntityType(typeof(T).FullName);
+            entityType.AddAnnotation(index.AnnotationName, index.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model)).Sql);
+            return entityTypeBuilder;
         }
 
         private static EntityTypeBuilder<T> AddNativeTriggerAnnotation<T>(
@@ -118,8 +119,8 @@ namespace Laraue.EfCoreTriggers.Extensions
         public static ModelBuilder View(this ModelBuilder entityTypeBuilder, string name, string rawScript, Action<ViewTypeBuilder> configuration)
             => entityTypeBuilder.AddView(name, rawScript, configuration);
 
-        public static ModelBuilder Index(this ModelBuilder entityTypeBuilder, string name, string rawScript, Action<IndexTypeBuilder> configuration)
-            => entityTypeBuilder.AddIndex(name, rawScript, configuration);
+        public static EntityTypeBuilder<T> NativeIndex<T>(this EntityTypeBuilder<T> entityTypeBuilder, string name, string rawScript, Action<NativeIndexTypeBuilder<T>> configuration) where T : class
+            => entityTypeBuilder.AddNativeIndex<T>(name, rawScript, configuration);
 
         private static EntityTypeBuilder<T> AddOnUpdateTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, Action<OnUpdateTrigger<T>> configuration,
             TriggerTime triggerTime) where T : class
@@ -177,12 +178,12 @@ namespace Laraue.EfCoreTriggers.Extensions
             return modelBuilder.AddViewAnnotation(view);
         }
 
-        private static ModelBuilder AddIndex(this ModelBuilder modelBuilder, string name, string rawScript, Action<IndexTypeBuilder> configuration)
+        private static EntityTypeBuilder<T> AddNativeIndex<T>(this EntityTypeBuilder<T> entityTypeBuilder, string name, string rawScript, Action<NativeIndexTypeBuilder<T>> configuration)
+             where T : class
         {
-            var count = modelBuilder.Model.GetNativeObjectAnnotations().Count();
-            var index = new IndexTypeBuilder(name, rawScript, count);
+            var index = new NativeIndexTypeBuilder<T>(name, rawScript, 0);
             configuration.Invoke(index);
-            return modelBuilder.AddIndexAnnotation(index);
+            return entityTypeBuilder.AddNativeIndexAnnotation(index);
         }
 
         private static EntityTypeBuilder<T> AddNativeTrigger<T>(this EntityTypeBuilder<T> entityTypeBuilder, Action<NativeTriggerTypeBuilder<T>> configuration, 

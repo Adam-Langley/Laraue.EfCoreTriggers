@@ -271,11 +271,11 @@ namespace Laraue.EfCoreTriggers.Common.Builders.Providers
         public string GetDropViewSql(string viewName)
             => new SqlBuilder($"DROP VIEW {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(viewName, Constants.NativeViewAnnotationKey)};");
 
-        public SqlBuilder GetIndexSql(IndexTypeBuilder indexTypeBuilder)
-            => GetTemplatedSqlBuilderBaseSql(indexTypeBuilder);
+        public SqlBuilder GetNativeIndexSql<TIndexEntity>(NativeIndexTypeBuilder<TIndexEntity> indexTypeBuilder)
+            => GetTemplatedSqlBuilderBaseSql(indexTypeBuilder, new Dictionary<string, string> { { "TABLE_NAME", GetTableName(typeof(TIndexEntity)) } });
 
-        public string GetDropIndexSql(string indexName)
-            => new SqlBuilder($"DROP INDEX {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(indexName, Constants.NativeIndexAnnotationKey)};");
+        public string GetDropIndexSql(string indexName, string tableName)
+            => new SqlBuilder($"DROP INDEX {NativeDbObjectExtensions.NativeAnnotationKeyToNativeObjectNamePattern(indexName, Constants.NativeIndexAnnotationKey)} ON {tableName};");
 
         public SqlBuilder GetNativeTriggerSql<TTriggerEntity>(NativeTriggerTypeBuilder<TTriggerEntity> nativeTriggerTypeBuilder)
             => GetTemplatedSqlBuilderBaseSql(nativeTriggerTypeBuilder, new Dictionary<string,string> { { "TABLE_NAME", GetTableName(typeof(TTriggerEntity)) }});

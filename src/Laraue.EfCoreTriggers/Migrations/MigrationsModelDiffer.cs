@@ -1,5 +1,6 @@
 ﻿using Laraue.EfCoreTriggers.Common;
 using Laraue.EfCoreTriggers.Extensions;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking.Internal;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -123,6 +124,65 @@ namespace Laraue.EfCoreTriggers.Migrations
                 }
             }
 
+            //Debugger.Launch();
+            // Drop all indexes for deleted entities.
+            foreach (var deletedTypeName in oldEntityTypeNames.Where(x => !commonEntityTypeNames.Any(y => object.Equals(x, y))))
+            {
+                var deletedEntityType = source.Model.FindEntityType(deletedTypeName);
+                foreach (var annotation in deletedEntityType.GetNativeIndexAnnotations())
+                {
+                    deleteNativeObjectOperations.AddDeleteNativeIndexSqlMigration(annotation, sourceModel, deletedEntityType, nativeObjectOperationOrdering);
+                }
+            }
+
+            // Add all indexes to created entities.
+            foreach (var newTypeName in newEntityTypeNames.Where(x => !commonEntityTypeNames.Any(y => object.Equals(x, y))))
+            {
+                foreach (var annotation in targetModel.FindEntityType(newTypeName).GetNativeIndexAnnotations())
+                    deleteNativeObjectOperations.AddCreateNativeIndexSqlMigration(annotation, nativeObjectOperationOrdering);
+            }
+            foreach (var entityTypeName in commonEntityTypeNames)
+            {
+                var oldEntityType = sourceModel.FindEntityType(entityTypeName);
+                var newEntityType = targetModel.FindEntityType(entityTypeName);
+
+                var oldAnnotationNames = sourceModel.FindEntityType(entityTypeName)
+                    .GetNativeIndexAnnotations()
+                    .Select(x => x.Name);
+
+                var newAnnotationNames = targetModel.FindEntityType(entityTypeName)
+                    .GetNativeIndexAnnotations()
+                    .Select(x => x.Name);
+
+                var commonAnnotationNames = oldAnnotationNames.Intersect(newAnnotationNames);
+
+                // If index was changed, recreate it.
+                foreach (var commonAnnotationName in commonAnnotationNames)
+                {
+                    var oldValue = sourceModel.FindEntityType(entityTypeName).GetAnnotation(commonAnnotationName);
+                    var newValue = targetModel.FindEntityType(entityTypeName).GetAnnotation(commonAnnotationName);
+                    if (!object.Equals(oldValue.Value, newValue.Value))
+                    {
+                        deleteNativeObjectOperations.AddDeleteNativeIndexSqlMigration(oldValue, sourceModel, sourceModel.FindEntityType(entityTypeName), nativeObjectOperationOrdering);
+                        createNativeObjectOperations.AddCreateNativeIndexSqlMigration(newValue, nativeObjectOperationOrdering);
+                    }
+                }
+
+                // If Index was removed, delete it.
+                foreach (var oldIndexName in oldAnnotationNames.Where(x => !commonAnnotationNames.Any(y => object.Equals(x, y))))
+                {
+                    var oldIndexAnnotation = oldEntityType.GetAnnotation(oldIndexName);
+                    deleteNativeObjectOperations.AddDeleteNativeIndexSqlMigration(oldIndexAnnotation, sourceModel, oldEntityType, nativeObjectOperationOrdering);
+                }
+
+                // If Index was added, create it.
+                foreach (var newIndexName in newAnnotationNames.Where(x => !commonAnnotationNames.Any(y => object.Equals(x, y))))
+                {
+                    var newIndexAnnotation = newEntityType.GetAnnotation(newIndexName);
+                    createNativeObjectOperations.AddCreateNativeIndexSqlMigration(newIndexAnnotation, nativeObjectOperationOrdering);
+                }
+            }
+
             // User Defined Functions
             SynchronizeModels(
                 sourceModel,
@@ -150,14 +210,6 @@ namespace Laraue.EfCoreTriggers.Migrations
                 x => x.GetViewAnnotations(),
                 (oldValue) => deleteNativeObjectOperations.AddDeleteViewSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
                 (newValue) => createNativeObjectOperations.AddCreateViewSqlMigration(newValue, nativeObjectOperationOrdering));
-
-            // Indexes
-            SynchronizeModels(
-                sourceModel,
-                targetModel,
-                x => x.GetIndexAnnotations(),
-                (oldValue) => deleteNativeObjectOperations.AddDeleteIndexSqlMigration(oldValue, sourceModel, nativeObjectOperationOrdering),
-                (newValue) => createNativeObjectOperations.AddCreateIndexSqlMigration(newValue, nativeObjectOperationOrdering));
 
             SynchronizeModels(
                 sourceModel,
@@ -285,7 +337,7 @@ namespace Laraue.EfCoreTriggers.Migrations
         public static IEnumerable<IAnnotation> GetViewAnnotations(this IAnnotatable entityType)
         => GetNativeAnnotations(Constants.NativeViewAnnotationKey, entityType);
 
-        public static IEnumerable<IAnnotation> GetIndexAnnotations(this IAnnotatable entityType)
+        public static IEnumerable<IAnnotation> GetNativeIndexAnnotations(this IAnnotatable entityType)
         => GetNativeAnnotations(Constants.NativeIndexAnnotationKey, entityType);
 
         public static IEnumerable<IAnnotation> GetNativeObjectAnnotations(this IAnnotatable entityType)
@@ -399,7 +451,7 @@ namespace Laraue.EfCoreTriggers.Migrations
             return list;
         }
 
-        public static IList<SqlOperation> AddCreateIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IDictionary<SqlOperation, int> ordering)
+        public static IList<SqlOperation> AddCreateNativeIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IDictionary<SqlOperation, int> ordering)
         {
             var indexSql = annotation.Value as string;
 
@@ -413,11 +465,11 @@ namespace Laraue.EfCoreTriggers.Migrations
             return list;
         }
 
-        public static IList<SqlOperation> AddDeleteIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IModel model, IDictionary<SqlOperation, int> ordering)
+        public static IList<SqlOperation> AddDeleteNativeIndexSqlMigration(this IList<SqlOperation> list, IAnnotation annotation, IModel model, IEntityType entityType, IDictionary<SqlOperation, int> ordering)
         {
             var op = new SqlOperation
             {
-                Sql = NativeDbObjectExtensions.GetSqlProvider(model).GetDropIndexSql(annotation.Name),
+                Sql = NativeDbObjectExtensions.GetSqlProvider(model).GetDropIndexSql(annotation.Name, entityType.GetTableName()),
             };
             list.Add(op);
             var order = NativeDbObjectExtensions.NativeAnnotationNameToSortOrder(annotation.Name, Constants.NativeIndexAnnotationKey);
