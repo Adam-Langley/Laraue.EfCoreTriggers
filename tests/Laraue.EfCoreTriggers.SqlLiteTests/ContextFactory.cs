@@ -1,20 +1,37 @@
-﻿using Laraue.EfCoreTriggers.Extensions;
+﻿using Laraue.EfCoreTriggers.SqlLite.Extensions;
 using Laraue.EfCoreTriggers.Tests;
+using Laraue.EfCoreTriggers.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
 namespace Laraue.EfCoreTriggers.SqlLiteTests
 {
-    public class ContextFactory : BaseContextFactory<NativeDbContext>
+    public class ContextFactory : BaseContextFactory<FinalContext>
     {
-        public override NativeDbContext CreateDbContext()
-        {
-            var options = new DbContextOptionsBuilder<NativeDbContext>()
-                .UseSqlite("Filename=D://test.db", x => x.MigrationsAssembly(typeof(ContextFactory).Assembly.FullName))
-                .UseSnakeCaseNamingConvention()
-                .UseTriggers()
-                .Options;
+        public override FinalContext CreateDbContext() => new(new ContextOptionsFactory<DynamicDbContext>().CreateDbContextOptions());
+    }
 
-            return new NativeDbContext(options);
+    public class FinalContext : DynamicDbContext
+    {
+        public FinalContext(DbContextOptions<DynamicDbContext> options)
+            : base(options)
+        {
+        }
+    }
+
+    public class ContextOptionsFactory<TContext> : IContextOptionsFactory<TContext> where TContext : DbContext
+    {
+        public DbContextOptions<TContext> CreateDbContextOptions()
+        {
+            return new DbContextOptionsBuilder<TContext>()
+                .UseSqlite("Data Source=test.db;", x =>
+                {
+                    x.MigrationsAssembly(typeof(ContextFactory).Assembly.FullName);
+                })
+                .UseSnakeCaseNamingConvention()
+                .UseSqlLiteTriggers()
+                .ReplaceService<IModelCacheKeyFactory, DynamicModelCacheKeyFactoryDesignTimeSupport>()
+                .Options;
         }
     }
 }
