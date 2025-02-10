@@ -29,7 +29,7 @@ steps:
     arguments: '--configuration release'
     packagesToPack: 'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj'
     nobuild: true
-    versioningScheme: byPrereleaseNumber
+    #versioningScheme: byPrereleaseNumber
 
 
 - task: NuGetCommand@2
