@@ -22,21 +22,23 @@ steps:
 
 # The second task is dotnet pack command again pointing to the csproj file
 # The nobuild means the project will not be compiled before running pack, because its already built in above step
-- task: DotNetCoreCLI@2
-  displayName: "dotnet pack"
-  inputs:
-    command: 'pack'
-    arguments: '--configuration release'
-    packagesToPack: 'src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
-    nobuild: true
-    versioningScheme: byPrereleaseNumber
+# - task: DotNetCoreCLI@2
+#   displayName: "dotnet pack"
+#   inputs:
+#     command: 'pack'
+#     arguments: '--configuration release'
+#     packagesToPack: 'src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
+#     nobuild: true
+#     versioningScheme: byPrereleaseNumber
 
 - task: DotNetCoreCLI@2
   displayName: "dotnet pack"
   inputs:
     command: 'pack'
     arguments: '--configuration release'
-    packagesToPack: 'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj'
+    packagesToPack: |
+      'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj'
+      'src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
     nobuild: true
     versioningScheme: byPrereleaseNumber
 
