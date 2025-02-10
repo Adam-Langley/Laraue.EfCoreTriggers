@@ -36,9 +36,7 @@ steps:
   inputs:
     command: 'pack'
     arguments: '--configuration release'
-    packagesToPack: |
-      'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj'
-      'src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
+    packagesToPack: 'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj;src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
     nobuild: true
     versioningScheme: byPrereleaseNumber
 
