@@ -27,9 +27,18 @@ steps:
   inputs:
     command: 'pack'
     arguments: '--configuration release'
+    packagesToPack: 'src/Laraue.EfCoreTriggers.Common/Laraue.EfCoreTriggers.Common.csproj'
+    nobuild: true
+    versioningScheme: byPrereleaseNumber
+
+- task: DotNetCoreCLI@2
+  displayName: "dotnet pack"
+  inputs:
+    command: 'pack'
+    arguments: '--configuration release'
     packagesToPack: 'src/Laraue.EfCoreTriggers.SqlServer/Laraue.EfCoreTriggers.SqlServer.csproj'
     nobuild: true
-    #versioningScheme: byPrereleaseNumber
+    versioningScheme: byPrereleaseNumber
 
 
 - task: NuGetCommand@2
