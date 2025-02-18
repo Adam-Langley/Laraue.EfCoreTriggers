@@ -1,24 +1,37 @@
-﻿using Laraue.EfCoreTriggers.Extensions;
+﻿using System;
+using Laraue.EfCoreTriggers.MySql.Extensions;
 using Laraue.EfCoreTriggers.Tests;
+using Laraue.EfCoreTriggers.Tests.Infrastructure;
 using Microsoft.EntityFrameworkCore;
-using System;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 
-namespace Laraue.EfCoreTriggers.MySqlTests
+namespace Laraue.EfCoreTriggers.MySqlTests;
+
+public class ContextFactory : BaseContextFactory<DynamicDbContext>
 {
-    public class ContextFactory : BaseContextFactory<NativeDbContext>
-    {
-        public override NativeDbContext CreateDbContext()
-        {
-            var options = new DbContextOptionsBuilder<NativeDbContext>()
-                .UseMySql("server=localhost;user=mysql;password=mysql;database=efcoretriggers;", new MySqlServerVersion(new Version(8, 0, 22)),
-                    x => x.MigrationsAssembly(typeof(ContextFactory).Assembly.FullName))
-                .UseSnakeCaseNamingConvention()
-                .UseTriggers()
-                .EnableSensitiveDataLogging()
-                .EnableDetailedErrors()
-                .Options;
+    public override FinalContext CreateDbContext() => new(new ContextOptionsFactory<DynamicDbContext>().CreateDbContextOptions());
+}
 
-            return new NativeDbContext(options);
-        }
+public class FinalContext : DynamicDbContext
+{
+    public FinalContext(DbContextOptions<DynamicDbContext> options)
+        : base(options)
+    {
+    }
+}
+
+public class ContextOptionsFactory<TContext> : IContextOptionsFactory<TContext> where TContext : DbContext
+{
+    public DbContextOptions<TContext> CreateDbContextOptions()
+    {
+        return new DbContextOptionsBuilder<TContext>()
+            .UseMySql("server=localhost;user=root;password=mysql;database=efcoretriggers;", new MySqlServerVersion(new Version(8, 0, 22)),
+                x => x
+                    .MigrationsAssembly(typeof(ContextFactory).Assembly.FullName))
+            .UseMySqlTriggers()
+            .EnableSensitiveDataLogging()
+            .EnableDetailedErrors()
+            .ReplaceService<IModelCacheKeyFactory, DynamicModelCacheKeyFactoryDesignTimeSupport>()
+            .Options;
     }
 }
