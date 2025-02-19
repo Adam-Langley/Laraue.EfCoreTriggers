@@ -49,7 +49,7 @@ steps:
   inputs:
     command: build
     projects: Laraue.EfCoreTriggers.sln
-    arguments: '--configuration $(BuildConfiguration) --verbosity 0'
+    arguments: '--configuration Release --verbosity 0'
 # - task: DotNetCoreCLI@2
 #   inputs:
 #     command: 'build'
