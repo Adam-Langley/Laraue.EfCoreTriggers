@@ -14,10 +14,46 @@ pool:
   vmImage: 'windows-latest'
 
 steps:
-- task: DotNetCoreCLI@2
+
+- task: UseDotNet@2
+  displayName: Use Dot Net Core 3.1.x
   inputs:
-    command: 'build'
-    projects: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
+    packageType: 'sdk'
+    version: '3.1.x'
+
+# - task: UseDotNet@2
+#   displayName: Use Dot Net Core 5.0.x
+#   inputs:
+#     packageType: 'sdk'
+#     version: '5.0.x'
+# - task: UseDotNet@2
+#   displayName: Use Dot Net Core 6.0.x
+#   inputs:
+#     packageType: 'sdk'
+#     version: '6.0.x'
+
+- task: UseDotNet@2
+  displayName: Use Dot Net Core 8.0.x
+  inputs:
+    packageType: 'sdk'
+    version: '8.0.x'
+
+- task: UseDotNet@2
+  displayName: Use Dot Net Core 9.0.x
+  inputs:
+    packageType: 'sdk'
+    version: '9.0.x'
+
+- task: DotNetCoreCLI@2
+  displayName: Build
+  inputs:
+    command: build
+    projects: Laraue.EfCoreTriggers.sln
+    arguments: '--configuration $(BuildConfiguration) --verbosity 0'
+# - task: DotNetCoreCLI@2
+#   inputs:
+#     command: 'build'
+#     projects: 'src/Laraue.EfCoreTriggers/Laraue.EfCoreTriggers.csproj'
 
 # The second task is dotnet pack command again pointing to the csproj file
 # The nobuild means the project will not be compiled before running pack, because its already built in above step
