@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Laraue.EfCoreTriggers.Common.Visitors.TriggerVisitors;
@@ -70,6 +71,7 @@ namespace Laraue.EfCoreTriggers.Common.Migrations
             // For existing entities.
             foreach (var entityTypeName in commonEntityTypeNames)
             {
+                Debugger.Launch();
                 var oldEntityType = sourceModel!.FindEntityType(entityTypeName);
                 var newEntityType = targetModel!.FindEntityType(entityTypeName);
 

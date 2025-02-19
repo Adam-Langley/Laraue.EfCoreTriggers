@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Laraue.EfCoreTriggers.Common.SqlGeneration;
@@ -196,6 +197,7 @@ public class SqlServerTriggerVisitor : BaseTriggerVisitor
 
     public override string GenerateDeleteTriggerSql(string triggerName, IEntityType entityType)
     {
+        Debugger.Launch();
         var tableSchemaPrefix = _sqlGenerator.GetSchemaPrefixSql(entityType.ClrType);
         
         return $"DROP TRIGGER {tableSchemaPrefix}{triggerName};";

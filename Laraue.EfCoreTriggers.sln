@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30523.141
+# Visual Studio Version 17
+VisualStudioVersion = 17.12.35707.178 d17.12
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Laraue.EfCoreTriggers.Common", "src\Laraue.EfCoreTriggers.Common\Laraue.EfCoreTriggers.Common.csproj", "{ECCF70FF-4296-4680-AD53-AA8352C4D663}"
 EndProject
@@ -28,6 +28,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Laraue.EfCoreTriggers.SqlServer", "src\Laraue.EfCoreTriggers.SqlServer\Laraue.EfCoreTriggers.SqlServer.csproj", "{FBB5388A-4AFD-4891-A90A-51E59E364278}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Laraue.EfCoreTriggers.TestMigration", "tests\Laraue.EfCoreTriggers.TestMigration\Laraue.EfCoreTriggers.TestMigration.csproj", "{50F9C440-4B10-4890-A266-A890341382EA}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "MinRisk.EfCoreTriggers.SqlServer", "src\MinRisk.EfCoreTriggers.SqlServer\MinRisk.EfCoreTriggers.SqlServer.csproj", "{50BE538B-C4A0-42F6-B7C0-25A32D302E6B}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -79,6 +81,10 @@ Global
 		{50F9C440-4B10-4890-A266-A890341382EA}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{50F9C440-4B10-4890-A266-A890341382EA}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{50F9C440-4B10-4890-A266-A890341382EA}.Release|Any CPU.Build.0 = Release|Any CPU
+		{50BE538B-C4A0-42F6-B7C0-25A32D302E6B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{50BE538B-C4A0-42F6-B7C0-25A32D302E6B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{50BE538B-C4A0-42F6-B7C0-25A32D302E6B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{50BE538B-C4A0-42F6-B7C0-25A32D302E6B}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -95,6 +101,7 @@ Global
 		{7B377F09-D92F-4844-AFC7-6642AC6174D1} = {9CDC27E2-01F4-4AA6-972C-D140415AA103}
 		{FBB5388A-4AFD-4891-A90A-51E59E364278} = {9CDC27E2-01F4-4AA6-972C-D140415AA103}
 		{50F9C440-4B10-4890-A266-A890341382EA} = {7EE4BD3E-BA14-4823-A5E7-1464B3591407}
+		{50BE538B-C4A0-42F6-B7C0-25A32D302E6B} = {9CDC27E2-01F4-4AA6-972C-D140415AA103}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {3167DB00-67A4-49E7-A52F-CE3B5DBE02A6}

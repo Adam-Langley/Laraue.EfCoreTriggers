@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Folder Include="Builders\NativeStoredProcedures\" />
+    <Folder Include="Extensions\" />
+    <Folder Include="Migrations\" />
+    <Folder Include="Visitors\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Laraue.EfCoreTriggers.Common\Laraue.EfCoreTriggers.Common.csproj" />
+    <ProjectReference Include="..\Laraue.EfCoreTriggers.SqlServer\Laraue.EfCoreTriggers.SqlServer.csproj" />
+  </ItemGroup>
+
+</Project>
