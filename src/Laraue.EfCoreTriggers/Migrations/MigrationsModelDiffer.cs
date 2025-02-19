@@ -19,6 +19,7 @@ namespace Laraue.EfCoreTriggers.Migrations
 {
     public class MigrationsModelDiffer : Microsoft.EntityFrameworkCore.Migrations.Internal.MigrationsModelDiffer
     {
+#if NETSTANDARD2_1
         public MigrationsModelDiffer(
             IRelationalTypeMappingSource typeMappingSource,
             IMigrationsAnnotationProvider migrationsAnnotations,
@@ -28,7 +29,35 @@ namespace Laraue.EfCoreTriggers.Migrations
                 : base (typeMappingSource, migrationsAnnotations, changeDetector, updateAdapterFactory, commandBatchPreparerDependencies)
         {
         }
-
+#elif NET6_0
+        public MigrationsModelDiffer(
+            IRelationalTypeMappingSource typeMappingSource,
+            IMigrationsAnnotationProvider migrationsAnnotations,
+            IRowIdentityMapFactory rowIdentityMapFactory,
+            CommandBatchPreparerDependencies commandBatchPreparerDependencies)
+                : base (typeMappingSource, migrationsAnnotations, rowIdentityMapFactory, commandBatchPreparerDependencies)
+        {
+        }
+#elif NET8_0
+        public MigrationsModelDiffer(
+            IRelationalTypeMappingSource typeMappingSource,
+            IMigrationsAnnotationProvider migrationsAnnotations,
+            IRowIdentityMapFactory rowIdentityMapFactory,
+            CommandBatchPreparerDependencies commandBatchPreparerDependencies)
+                : base (typeMappingSource, migrationsAnnotations, rowIdentityMapFactory, commandBatchPreparerDependencies)
+        {
+        }
+#elif NET9_0
+        public MigrationsModelDiffer(
+            IRelationalTypeMappingSource typeMappingSource,
+            IMigrationsAnnotationProvider migrationsAnnotations,
+            IRelationalAnnotationProvider relationalAnnotationProvider,
+            IRowIdentityMapFactory rowIdentityMapFactory,
+            CommandBatchPreparerDependencies commandBatchPreparerDependencies)
+                : base (typeMappingSource, migrationsAnnotations, relationalAnnotationProvider, rowIdentityMapFactory, commandBatchPreparerDependencies)
+        {
+        }
+#endif
         public override IReadOnlyList<MigrationOperation> GetDifferences(IRelationalModel source, IRelationalModel target)
         {
             var nativeObjectOperationOrdering = new Dictionary<SqlOperation, int>();
@@ -124,7 +153,6 @@ namespace Laraue.EfCoreTriggers.Migrations
                 }
             }
 
-            //Debugger.Launch();
             // Drop all indexes for deleted entities.
             foreach (var deletedTypeName in oldEntityTypeNames.Where(x => !commonEntityTypeNames.Any(y => object.Equals(x, y))))
             {

@@ -10,6 +10,7 @@ using Laraue.EfCoreTriggers.Common.Builders.Triggers.OnInsert;
 using Laraue.EfCoreTriggers.Common.Builders.Triggers.OnUpdate;
 using Laraue.EfCoreTriggers.Migrations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 using System;
 using System.Linq;
@@ -23,7 +24,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             Trigger<T> configuredTrigger) where T : class
         {
             var entityType = entityTypeBuilder.Metadata.Model.FindEntityType(typeof(T).FullName);
-            entityType.AddAnnotation(configuredTrigger.Name, configuredTrigger.BuildSql(TriggerExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model)).Sql);
+            entityType.AddAnnotation(configuredTrigger.Name, configuredTrigger.BuildSql(TriggerExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model as IModel)).Sql);
             return entityTypeBuilder;
         }
 
@@ -31,7 +32,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             this ModelBuilder modelBuilder,
             StoredProcedureTypeBuilder storedProcedure)
         {
-            modelBuilder.Model.AddAnnotation(storedProcedure.AnnotationName, storedProcedure.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
+            modelBuilder.Model.AddAnnotation(storedProcedure.AnnotationName, storedProcedure.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model as IModel)).Sql);
             return modelBuilder;
         }
 
@@ -39,7 +40,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             this ModelBuilder modelBuilder,
             UserDefinedTypeTypeBuilder userDefinedType)
         {
-            modelBuilder.Model.AddAnnotation($"{userDefinedType.AnnotationName}", userDefinedType.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
+            modelBuilder.Model.AddAnnotation($"{userDefinedType.AnnotationName}", userDefinedType.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model as IModel)).Sql);
             return modelBuilder;
         }
 
@@ -47,7 +48,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             this ModelBuilder modelBuilder,
             UserDefinedFunctionTypeBuilder userDefinedFunction)
         {
-            modelBuilder.Model.AddAnnotation(userDefinedFunction.AnnotationName, userDefinedFunction.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
+            modelBuilder.Model.AddAnnotation(userDefinedFunction.AnnotationName, userDefinedFunction.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model as IModel)).Sql);
             return modelBuilder;
         }
 
@@ -55,7 +56,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             this ModelBuilder modelBuilder,
             ViewTypeBuilder view)
         {
-            modelBuilder.Model.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model)).Sql);
+            modelBuilder.Model.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(modelBuilder.Model as IModel)).Sql);
             return modelBuilder;
         }
         private static EntityTypeBuilder<T> AddNativeIndexAnnotation<T>(
@@ -63,7 +64,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             NativeIndexTypeBuilder<T> index) where T : class
         {
             var entityType = entityTypeBuilder.Metadata.Model.FindEntityType(typeof(T).FullName);
-            entityType.AddAnnotation(index.AnnotationName, index.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model)).Sql);
+            entityType.AddAnnotation(index.AnnotationName, index.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model as IModel)).Sql);
             return entityTypeBuilder;
         }
 
@@ -72,7 +73,7 @@ namespace Laraue.EfCoreTriggers.Extensions
             NativeTriggerTypeBuilder<T> view) where T : class
         {
             var entityType = entityTypeBuilder.Metadata.Model.FindEntityType(typeof(T).FullName);
-            entityType.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model)).Sql);
+            entityType.AddAnnotation(view.AnnotationName, view.BuildSql(NativeDbObjectExtensions.GetSqlProvider(entityTypeBuilder.Metadata.Model as IModel)).Sql);
             return entityTypeBuilder;
         }
 
@@ -148,7 +149,7 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static ModelBuilder AddStoredProcedure(this ModelBuilder modelBuilder, string name, string rawScript, Action<StoredProcedureTypeBuilder> configuration)
         {
-            var count = modelBuilder.Model.GetNativeObjectAnnotations().Count();
+            var count = (modelBuilder.Model as IModel).GetNativeObjectAnnotations().Count();
             var storedProcedure = new StoredProcedureTypeBuilder(name, rawScript, count);
             configuration.Invoke(storedProcedure);
             return modelBuilder.AddStoredProcedureAnnotation(storedProcedure);
@@ -156,7 +157,7 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static ModelBuilder AddUserDefinedType(this ModelBuilder modelBuilder, string name, string type, Action<UserDefinedTypeTypeBuilder> configuration)
         {
-            var count = modelBuilder.Model.GetNativeObjectAnnotations().Count();
+            var count = (modelBuilder.Model as IModel).GetNativeObjectAnnotations().Count();
             var userDefinedType = new UserDefinedTypeTypeBuilder(name, type, count);
             configuration.Invoke(userDefinedType);
             return modelBuilder.AddUserDefinedTypeAnnotation(userDefinedType);
@@ -164,7 +165,7 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static ModelBuilder AddUserDefinedFunction(this ModelBuilder modelBuilder, string name, string rawScript, Action<UserDefinedFunctionTypeBuilder> configuration)
         {
-            var count = modelBuilder.Model.GetNativeObjectAnnotations().Count();
+            var count = (modelBuilder.Model as IModel).GetNativeObjectAnnotations().Count();
             var userDefinedFunction = new UserDefinedFunctionTypeBuilder(name, rawScript, count);
             configuration.Invoke(userDefinedFunction);
             return modelBuilder.AddUserDefinedFunctionAnnotation(userDefinedFunction);
@@ -172,7 +173,7 @@ namespace Laraue.EfCoreTriggers.Extensions
 
         private static ModelBuilder AddView(this ModelBuilder modelBuilder, string name, string rawScript, Action<ViewTypeBuilder> configuration)
         {
-            var count = modelBuilder.Model.GetNativeObjectAnnotations().Count();
+            var count = (modelBuilder.Model as IModel).GetNativeObjectAnnotations().Count();
             var view = new ViewTypeBuilder(name, rawScript, count);
             configuration.Invoke(view);
             return modelBuilder.AddViewAnnotation(view);
